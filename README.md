@@ -31,6 +31,14 @@ Aqui se requieren ciertos datos esenciales para el registro de un libro
 
 ![image](https://github.com/user-attachments/assets/8572cab6-8f0f-45b1-8dbd-60852d6b5955)
 
+Al registrar un libro:
+![image](https://github.com/user-attachments/assets/16b338ef-4dc7-4241-83db-31cbe53a209a)
+
+Al consultar un libro:
+Puedes consultar la lista de libros disponible en la base de dates y asi mismo su disponibilidad, genero y ciertas caracteristicas puestas anteriormente en el registro de libros
+![image](https://github.com/user-attachments/assets/17cbe58c-001d-4e2b-8371-e92e70619a89)
+
+
 
 
 
