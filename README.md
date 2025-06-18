@@ -15,7 +15,6 @@ Si el usuario no llena todas las casillas:
 
 ![image](https://github.com/user-attachments/assets/2739e84f-e47e-4815-a3f5-719f7ae7e535)
 
-
 INTERFAZ 3, INICIO DE SESION:
 
 Si no se rellenan los campos:
@@ -39,7 +38,8 @@ Puedes consultar la lista de libros disponible en la base de dates y asi mismo s
 ![image](https://github.com/user-attachments/assets/17cbe58c-001d-4e2b-8371-e92e70619a89)
 
 
-
+Siempre vamos a tener un botón para volver al frame anterior (vista anterior), cuando registramos un libro existe el error de registrar un libro vacio (error a corregir)
+Los botones nos permiitrán desplazarnos de una mejor manera, las interacciones se ven a través de consola (cosa que hay que arreglar para que se vea en la interfaz)
 
 
 
