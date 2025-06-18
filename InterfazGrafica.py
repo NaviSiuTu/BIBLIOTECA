@@ -1,32 +1,32 @@
 import tkinter as tk
-
-#from Funcionalidades import mostrar_frame, guardar_libro, guardar_usuario, volver_inicio, consultar_libros
-
 import json
 
-# ---------------------------
-# FUNCIONES PRINCIPALES
-# ---------------------------
+usuario_actual = None
+
 def mostrar_frame(frame):
-    frame_inicio.pack_forget()
-    frame_usuarios.pack_forget()
-    frame_libros.pack_forget()
-    frame_Consulta.pack_forget()
+    for f in [frame_bienvenida, frame_registro, frame_login, frame_principal, frame_libros, frame_consulta]:
+        f.pack_forget()
     frame.pack()
 
 def volver_inicio():
-    mostrar_frame(frame_inicio)
+    mostrar_frame(frame_principal)
 
 # ---------------------------
-# GUARDAR USUARIO EN JSON
+# REGISTRO DE USUARIO
 # ---------------------------
-def guardar_usuario():
-    usuario = entry_usuario.get()
-    correo = entry_correo.get()
+def registrar_usuario():
+    usuario = entry_reg_usuario.get()
+    correo = entry_reg_correo.get()
+    contraseña = entry_reg_contraseña.get()
+
+    if not usuario or not correo or not contraseña:
+        print("Completa todos los campos.")
+        return
 
     nuevo_usuario = {
         "usuario": usuario,
-        "correo": correo
+        "correo": correo,
+        "contraseña": contraseña
     }
 
     try:
@@ -35,27 +35,60 @@ def guardar_usuario():
     except FileNotFoundError:
         datos = []
 
-    datos.append(nuevo_usuario)
+    for u in datos:
+        if u["usuario"] == usuario:
+            print("Usuario ya registrado.")
+            return
 
+    datos.append(nuevo_usuario)
     with open("usuarios.json", "w") as archivo:
         json.dump(datos, archivo, indent=4)
 
-    print(f"Usuario '{usuario}' registrado!")
-    entry_usuario.delete(0, "end")
-    entry_correo.delete(0, "end")
+    print("Usuario registrado exitosamente.")
+    entry_reg_usuario.delete(0, "end")
+    entry_reg_correo.delete(0, "end")
+    entry_reg_contraseña.delete(0, "end")
+    mostrar_frame(frame_bienvenida)
 
 # ---------------------------
-# GUARDAR LIBRO EN JSON
+# INICIO DE SESIÓN
+# ---------------------------
+def iniciar_sesion():
+    global usuario_actual
+    usuario = entry_login_usuario.get()
+    contraseña = entry_login_contraseña.get()
+
+    try:
+        with open("usuarios.json", "r") as archivo:
+            datos = json.load(archivo)
+    except FileNotFoundError:
+        datos = []
+
+    for u in datos:
+        if u["usuario"] == usuario and u["contraseña"] == contraseña:
+            print("Inicio de sesión exitoso.")
+            usuario_actual = usuario
+            entry_login_usuario.delete(0, "end")
+            entry_login_contraseña.delete(0, "end")
+            mostrar_frame(frame_principal)
+            return
+
+    print("Credenciales incorrectas.")
+
+# ---------------------------
+# GUARDAR LIBRO
 # ---------------------------
 def guardar_libro():
     titulo = entry_titulo.get()
     autor = entry_autor.get()
     categoria = opcion_categoria.get()
+    disponibilidad = opcion_disponibilidad.get()
 
     nuevo_libro = {
         "titulo": titulo,
         "autor": autor,
-        "categoria": categoria
+        "categoria": categoria,
+        "disponibilidad": disponibilidad
     }
 
     try:
@@ -69,131 +102,118 @@ def guardar_libro():
     with open("libros.json", "w") as archivo:
         json.dump(datos, archivo, indent=4)
 
-    print(f"Libro '{titulo}' guardado correctamente!")
+    print(f"Libro '{titulo}' guardado.")
     entry_titulo.delete(0, "end")
     entry_autor.delete(0, "end")
     opcion_categoria.set(categorias[0])
+    opcion_disponibilidad.set(disponibilidades[0])
 
 # ---------------------------
 # CONSULTAR LIBROS
 # ---------------------------
 def consultar_libros():
-    text_resultado.delete("1.0", "end")  # Limpia el área de texto
+    text_resultado.delete("1.0", "end")
     try:
         with open("libros.json", "r") as archivo:
             libros = json.load(archivo)
             if libros:
                 for i, libro in enumerate(libros, 1):
-                    texto = f"{i}. Título: {libro['titulo']}, Autor: {libro['autor']}, Categoría: {libro['categoria']}\n"
-                    text_resultado.insert("end", texto)
+                    text_resultado.insert("end", f"{i}. {libro['titulo']} - {libro['autor']} ({libro['categoria']}) - {libro['disponibilidad']}\n")
             else:
                 text_resultado.insert("end", "No hay libros registrados.")
     except FileNotFoundError:
-        text_resultado.insert("end", "Archivo de libros no encontrado.")
+        text_resultado.insert("end", "No se encontró la base de libros.")
 
 # ---------------------------
 # INTERFAZ PRINCIPAL
 # ---------------------------
-ventana = tk.Tk() #Abre una ventana
-ventana.geometry("500x500") #Dimensiones de la ventana
-ventana.title("Gestor de Libros y Usuarios") #Titulo de la ventana
+ventana = tk.Tk()
+ventana.geometry("520x550")
+ventana.title("------- Gestor de Biblioteca -------")
 
 # ---------------------------
-# FRAME INICIO
+# FRAME BIENVENIDA
 # ---------------------------
-frame_inicio = tk.Frame(ventana) #Primer frime para navegación dinámica
-label_inicio = tk.Label(frame_inicio, text="Bienvenido al Gestor", font=("Arial", 16, "bold")) #Titulo del frame
-label_inicio.pack(pady=20) #Posición en y del frame
-
-btn_usuarios = tk.Button(frame_inicio, text="Registrar Usuario", command=lambda: mostrar_frame(frame_usuarios)) #botoo de registro de usuario en el frame inicial
-btn_usuarios.pack(pady=10) #Ubicación boton
-btn_libros = tk.Button(frame_inicio, text="Registrar Libro", command=lambda: mostrar_frame(frame_libros)) #Boton de registro e libro en el frame inicial
-btn_libros.pack(pady=10) #Ubicación del botón
-btn_consultar = tk.Button(frame_inicio, text="Consultar Libro", command=lambda: [mostrar_frame(frame_Consulta), consultar_libros()])
-btn_consultar.pack(pady=10)
-
-frame_inicio.pack()
+frame_bienvenida = tk.Frame(ventana)
+tk.Label(frame_bienvenida, text="Bienvenido 📚", font=("Arial", 18, "bold")).pack(pady=20)
+tk.Button(frame_bienvenida, text="Registrar Usuario", command=lambda: mostrar_frame(frame_registro)).pack(pady=10)
+tk.Button(frame_bienvenida, text="Iniciar Sesión", command=lambda: mostrar_frame(frame_login)).pack(pady=10)
+frame_bienvenida.pack()
 
 # ---------------------------
-# FRAME REGISTRO USUARIOS
+# FRAME REGISTRO
 # ---------------------------
-frame_usuarios = tk.Frame(ventana)
+frame_registro = tk.Frame(ventana)
+tk.Label(frame_registro, text="Registrar Usuario", font=("Arial", 16)).pack(pady=10)
+tk.Label(frame_registro, text="Usuario:").pack()
+entry_reg_usuario = tk.Entry(frame_registro)
+entry_reg_usuario.pack()
+tk.Label(frame_registro, text="Correo:").pack()
+entry_reg_correo = tk.Entry(frame_registro)
+entry_reg_correo.pack()
+tk.Label(frame_registro, text="Contraseña:").pack()
+entry_reg_contraseña = tk.Entry(frame_registro, show="*")
+entry_reg_contraseña.pack()
+tk.Button(frame_registro, text="Registrar", command=registrar_usuario).pack(pady=10)
+tk.Button(frame_registro, text="Volver", command=lambda: mostrar_frame(frame_bienvenida)).pack()
 
-label_usuarios = tk.Label(frame_usuarios, text="Registro de Usuarios \U0001F464", font=("Arial", 16, "bold"))
-label_usuarios.pack(pady=10)
+# ---------------------------
+# FRAME LOGIN
+# ---------------------------
+frame_login = tk.Frame(ventana)
+tk.Label(frame_login, text="Iniciar Sesión", font=("Arial", 16)).pack(pady=10)
+tk.Label(frame_login, text="Usuario:").pack()
+entry_login_usuario = tk.Entry(frame_login)
+entry_login_usuario.pack()
+tk.Label(frame_login, text="Contraseña:").pack()
+entry_login_contraseña = tk.Entry(frame_login, show="*")
+entry_login_contraseña.pack()
+tk.Button(frame_login, text="Entrar", command=iniciar_sesion).pack(pady=10)
+tk.Button(frame_login, text="Volver", command=lambda: mostrar_frame(frame_bienvenida)).pack()
 
-label_usuario = tk.Label(frame_usuarios, text="Nombre del usuario:")
-label_usuario.pack()
-entry_usuario = tk.Entry(frame_usuarios)
-entry_usuario.pack()
-
-label_correo = tk.Label(frame_usuarios, text="Correo electrónico:")
-label_correo.pack()
-entry_correo = tk.Entry(frame_usuarios)
-entry_correo.pack()
-
-label_contraseña = tk.Label(frame_usuarios, text="Contraseña:")
-label_contraseña.pack()
-# No se guarda la contraseña en este ejemplo
-
-btn_guardar_usuario = tk.Button(frame_usuarios, text="Guardar Usuario", command=guardar_usuario)
-btn_guardar_usuario.pack(pady=10)
-
-btn_volver1 = tk.Button(frame_usuarios, text="Volver al Inicio", command=volver_inicio)
-btn_volver1.pack(pady=10)
+# ---------------------------
+# FRAME PRINCIPAL (DESPUÉS DE LOGIN)
+# ---------------------------
+frame_principal = tk.Frame(ventana)
+tk.Label(frame_principal, text="Panel Principal", font=("Arial", 16)).pack(pady=20)
+tk.Button(frame_principal, text="Registrar Libro", command=lambda: mostrar_frame(frame_libros)).pack(pady=10)
+tk.Button(frame_principal, text="Consultar Libros", command=lambda: [mostrar_frame(frame_consulta), consultar_libros()]).pack(pady=10)
+tk.Button(frame_principal, text="Cerrar Sesión", command=lambda: mostrar_frame(frame_bienvenida)).pack(pady=20)
 
 # ---------------------------
 # FRAME REGISTRO LIBROS
 # ---------------------------
 frame_libros = tk.Frame(ventana)
-
-label_libros = tk.Label(frame_libros, text="Registro de Libros \U0001F4DA", font=("Arial", 16, "bold"))
-label_libros.pack(pady=10)
-
-label_titulo = tk.Label(frame_libros, text="Título del libro:")
-label_titulo.pack()
+tk.Label(frame_libros, text="Registrar Libro", font=("Arial", 16)).pack(pady=10)
+tk.Label(frame_libros, text="Título:").pack()
 entry_titulo = tk.Entry(frame_libros)
 entry_titulo.pack()
-
-label_autor = tk.Label(frame_libros, text="Autor:")
-label_autor.pack()
+tk.Label(frame_libros, text="Autor:").pack()
 entry_autor = tk.Entry(frame_libros)
 entry_autor.pack()
-
-label_categoria = tk.Label(frame_libros, text="Categoría:")
-label_categoria.pack()
-
+tk.Label(frame_libros, text="Categoría:").pack()
 categorias = ["Ciencia ficción", "Romance", "Historia"]
-opcion_categoria = tk.StringVar()
-opcion_categoria.set(categorias[0])
-
-menu_categorias = tk.OptionMenu(frame_libros, opcion_categoria, *categorias)
-menu_categorias.pack()
-
-btn_guardar_libro = tk.Button(frame_libros, text="Guardar Libro", command=guardar_libro)
-btn_guardar_libro.pack(pady=10)
-
-btn_volver2 = tk.Button(frame_libros, text="Volver al Inicio", command=volver_inicio)
-btn_volver2.pack(pady=10)
+opcion_categoria = tk.StringVar(value=categorias[0])
+tk.OptionMenu(frame_libros, opcion_categoria, *categorias).pack()
+tk.Label(frame_libros, text="Disponibilidad:").pack()
+disponibilidades = ["disponible", "prestado"]
+opcion_disponibilidad = tk.StringVar(value=disponibilidades[0])
+tk.OptionMenu(frame_libros, opcion_disponibilidad, *disponibilidades).pack()
+tk.Button(frame_libros, text="Guardar Libro", command=guardar_libro).pack(pady=10)
+tk.Button(frame_libros, text="Volver", command=volver_inicio).pack()
 
 # ---------------------------
-# FRAME DE CONSULTA DE LIBROS
+# FRAME CONSULTA LIBROS
 # ---------------------------
-frame_Consulta = tk.Frame(ventana)
-
-label_consulta = tk.Label(frame_Consulta, text="Consulta de Libros 📚", font=("Arial", 16, "bold"))
-label_consulta.pack(pady=10)
-
-text_resultado = tk.Text(frame_Consulta, height=15, width=60)
-text_resultado.pack(pady=10)
-
-btn_actualizar = tk.Button(frame_Consulta, text="Actualizar Lista", command=consultar_libros)
-btn_actualizar.pack(pady=5)
-
-btn_volver3 = tk.Button(frame_Consulta, text="Volver al Inicio", command=volver_inicio)
-btn_volver3.pack(pady=10)
+frame_consulta = tk.Frame(ventana)
+tk.Label(frame_consulta, text="Consulta de Libros", font=("Arial", 16)).pack(pady=10)
+text_resultado = tk.Text(frame_consulta, height=15, width=60)
+text_resultado.pack()
+tk.Button(frame_consulta, text="Actualizar Lista", command=consultar_libros).pack(pady=5)
+tk.Button(frame_consulta, text="Volver", command=volver_inicio).pack(pady=10)
 
 # ---------------------------
 # MAIN LOOP
 # ---------------------------
 ventana.mainloop()
+
